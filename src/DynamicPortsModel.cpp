@@ -56,8 +56,7 @@ std::unordered_set<ConnectionId> DynamicPortsModel::allConnectionIds(NodeId cons
 
 void DynamicPortsModel::forceNodeUiUpdate(NodeId const id)
 {
-   // This seems to be useless but without it the node widths are all messed up
-   // and I have no idea why...
+   // Emit update and enforce consistent node dimensions
    Q_EMIT nodeUpdated(id);
    _nodeGeometryData[id].size.setWidth(290);
 }
@@ -505,8 +504,8 @@ void DynamicPortsModel::ToFile(std::string const filename) const
         return;
     }
 
-    // writes nodes data to the begining of the file in the following format:
-    // #state_name;pos_x;pos_y;out_port_count;in_port_count
+    // writes node metadata to the beginning of the file in the following format:
+    // #state_name;pos_x;pos_y;in_port_count;out_port_count
     for(const auto nodeId : _nodeIds)
     {
         writeNodeData(out, nodeId);

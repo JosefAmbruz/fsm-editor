@@ -264,7 +264,7 @@ void InterpretGenerator::generate(const Automaton& automaton, const QString& out
 
         QString cond_func = "condition_always_true"; // Default
         if (!t.condition.empty()) {
-            cond_func = "condition_" + sanitize_python_identifier(t.condition); // this is error prone but whatever
+            cond_func = "condition_" + sanitize_python_identifier(t.condition);
         }
         outfile << "        condition=" << cond_func << ",\n";
 

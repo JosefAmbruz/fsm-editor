@@ -1,0 +1,40 @@
+#Red;50;150;1;1
+#Green;300;150;1;1
+#Yellow;550;150;1;1
+AUTOMATON TrafficLight
+    DESCRIPTION "Three-state cyclic traffic light controller"
+    START Red
+    FINISH []
+    VARS
+        Int cycle_count = 0
+    END
+
+STATE Red
+    ACTION
+        print("[LIGHT] RED: Stop.")
+    END
+
+STATE Green
+    ACTION
+        print("[LIGHT] GREEN: Go.")
+    END
+
+STATE Yellow
+    ACTION
+        cycle_count = cycle_count + 1
+        print(f"[LIGHT] YELLOW: Caution. Cycle: {cycle_count}")
+    END
+
+TRANSITION Red -> Green
+    CONDITION True
+    DELAY 2
+
+TRANSITION Green -> Yellow
+    CONDITION True
+    DELAY 2
+
+TRANSITION Yellow -> Red
+    CONDITION True
+    DELAY 1
+
+END

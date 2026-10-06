@@ -158,7 +158,7 @@ void AutomatonParser::FromFile(std::string const filename, Automaton& automaton)
                         cerr << "Malformed TRANSITION line: " << line << endl;
                     }
                 } else if (line == "END") {
-                    // Posledny end
+                    // Final END token
                     state = ParserState::DONE;
                 } else {
                     cerr << "Expected 'STATE', 'TRANSITION', or 'END', found: " << line << endl;

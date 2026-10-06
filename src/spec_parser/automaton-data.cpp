@@ -21,13 +21,14 @@ string Automaton::varDataTypeAsString(VarDataType type)
     case VarDataType::Double: return "Double";
     case VarDataType::String: return "String";
     }
+    return "Int";
 }
 
 VarDataType Automaton::varDataTypeFromString(const string& str)
 {
-    if(str == "Double")return VarDataType::Int;
-    else if(str == "String")return VarDataType::String;
-    else return VarDataType::Int; // if not recognized, default to Int, fuck it
+    if(str == "Double") return VarDataType::Double;
+    else if(str == "String") return VarDataType::String;
+    else return VarDataType::Int; // Default fallback to Int
 }
 
 void Automaton::addVariable(const string& varName, const string& varValue, const VarDataType type) {

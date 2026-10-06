@@ -1,0 +1,41 @@
+#State_Init;50;100;1;1
+#State_Count;300;100;1;2
+#State_Complete;550;100;1;0
+AUTOMATON Counter
+    DESCRIPTION "Simple loop counter automaton"
+    START State_Init
+    FINISH [State_Complete]
+    VARS
+        Int counter = 0
+    END
+
+STATE State_Init
+    ACTION
+        counter = 0
+        print(f"[FSM] Counter reset to: {counter}")
+    END
+
+STATE State_Count
+    ACTION
+        counter = counter + 1
+        print(f"[FSM] Counted up to: {counter}")
+    END
+
+STATE State_Complete
+    ACTION
+        print(f"[FSM] Finished counting. Final count: {counter}")
+    END
+
+TRANSITION State_Init -> State_Count
+    CONDITION counter == 0
+    DELAY 1
+
+TRANSITION State_Count -> State_Count
+    CONDITION counter < 5
+    DELAY 1
+
+TRANSITION State_Count -> State_Complete
+    CONDITION counter >= 5
+    DELAY 1
+
+END
