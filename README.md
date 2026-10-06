@@ -1,188 +1,188 @@
-# FSM Editor and Interpreter
+# FSM Editor & Interpreter
 
-A graphical editor and interpreter for designing, simulating, and running finite state machines (FSMs) with Python integration.
+A graphical node-based editor and real-time execution environment for Finite State Machines (FSMs), built with modern **C++17**, **Qt (5/6)**, and **Python 3**.
 
-## Table of Contents
+---
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Building the Project](#building-the-project)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Doxygen Documentation](#doxygen-documentation)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-- [Authors](#authors)
+## Overview
+
+**FSM Editor** provides an end-to-end environment for visually authoring, configuring, simulating, and debugging finite state machines. The application bridges a high-performance C++ graphical node interface with a lightweight Python interpreter via an asynchronous TCP-based IPC protocol.
+
+```
+┌─────────────────────────────────┐           TCP Socket (JSON Protocol)          ┌───────────────────────────────────┐
+│     C++ / Qt Desktop UI         │ <===========================================> │     Python Execution Core         │
+│  - Interactive Node Canvas      │        State sync, telemetry & injection      │  - Asynchronous Subprocess        │
+│  - Variable Inspector & Editor  │                                               │  - State Machine Dispatcher       │
+│  - Python Code Generator        │ ──(generates output.py & launches)──────────> │  - Transition Evaluator           │
+└─────────────────────────────────┘                                               └───────────────────────────────────┘
+```
+
+---
 
 ## Features
 
-- Visual FSM editor with node-based interface
-- Add states and transitions
-- Python code generation and execution for FSMs
-- TCP client-server communication with Python FSM interpreter using custom protocol
-- Logging and real-time output display
-- Save FSM projects into human readable, custom format
+- **Visual Graph Editor**: Node-based canvas allowing intuitive creation of states, terminal/initial flags, and directional transition wiring with dynamic port management.
+- **Automated Code Generation**: Compiles the visual state machine topology and logic on the fly into standalone Python scripts (`output.py`).
+- **Real-Time Telemetry & IPC**: Built-in TCP client-server bridge streaming state changes, transition delays, and action executions live to the UI.
+- **Live Variable Inspection & Mutation**: Monitor automaton variables in real time and dynamically inject modified values into running state machines.
+- **Deadlock & Stall Detection**: Automatically identifies when an automaton enters a blocked or non-advancing state during execution.
+- **Human-Readable File Serialization (`.fsm`)**: Save and load complete state machine designs using a custom human-readable specification format, storing graph layout alongside automaton logic.
+- **External Client Interfacing**: Includes a standalone Python test client (`tests/fsm_client_test.py`) capable of connecting to the running state machine over TCP to send commands and log events.
 
-## Incomplete/Missing Functionality (first submission only!)
+---
 
-- Loading FSM from source file
-- Editing variables at runtime
-- Examples for testing
+## File Format (`.fsm`)
 
-## Features added in second submission
+The editor saves and loads state machines using a clean, human-readable specification syntax:
 
-- ✅ Load a Automaton from **human-readable** and editable text file (`.fsm` file extension)
-- ✅ Save current Automaton in the UI editor to a `.fsm` file
+```text
+#State 2;339;225;1;1
+#State 1;-17;70;1;1
+AUTOMATON my_fsm
+DESCRIPTION "Example State Machine"
+START State_Initial
+FINISH [State_Final]
+VARS
+Int counter = 0
+String status = "idle"
+STATE State_Initial
+ACTION
+    counter = counter + 1
+    print(f"Counter: {counter}")
+END
+TRANSITION State_Initial -> State_Final
+CONDITION counter >= 5
+...
+```
 
-  - ➡️ example of a `.fsm` file:
-
-    ```
-    #State 2;339;225;1;1
-    #State 1;-17;70;1;1
-    AUTOMATON my_fsm
-    DESCRIPTION "My Automaton"
-    START State_Initial
-    FINISH [StateA, StateB]
-    VARS
-    Int x = 0
-    String z = hello
-    STATE State 1
-    ACTION
-        x = x + 10
-        print(x)
-    END
-    ...
-    ```
-
-- ✅ Show the **current state** of a running Automaton
-  - ➡️ Current state of running Autoamton is displayed next to the `🟢Run` button.
-- ✅ Added a panel to **display live state** of variables and their values of a running Automaton.
-  - ➡️ Use the panel in bottom-right to add variables to your Automaton. Values will be in sync with the running Automaton.
-- ✅ Allow for **changing the variable values of a running Automaton**
-  - ➡️ While an Automaton is running, you can inject values into pre-defined variables using the bottom-right panel.
-- ✅ Improve live logging
-  - ➡️ more verbose and straight forward logging
-- ✅ Make User Interface more friendly and easy to use.
-- ✅ Autamtically detect if the running automaton is stuck.
-- ✅ Add examples for testing.
+---
 
 ## Requirements
 
-- Qt 5 or Qt 6 (with Widgets and Network modules)
-- CMake >= 3.5
-- C++17 compatible compiler
-- Python 3.x (for FSM interpreter)
-- Doxygen (optional, for documentation)
+- **C++ Compiler**: C++17 compatible (`GCC 9+`, `Clang 10+`, or `MSVC 2019+`)
+- **Build System**: CMake >= 3.16
+- **GUI Framework**: Qt 5 or Qt 6 (`QtWidgets`, `QtNetwork`)
+- **Runtime Interpreter**: Python 3.8+ (accessible via `python` in `PATH`)
+- **Documentation (Optional)**: Doxygen
 
-## Installation
-
-1. **Clone the repository:**
-
-   ```sh
-   git clone https://github.com/JosefAmbruz/ICP-projekt.git
-   cd ICP-projekt
-   ```
-
-2. **Install dependencies:**
-   - Make sure Qt and Python 3 are installed and available in your PATH.
+---
 
 ## Building the Project
 
-1. **Create a build directory:**
+The project follows standard modern CMake conventions with out-of-source builds:
 
-   ```sh
-   mkdir src/build
-   cd src/build
-   ```
+### Using CMake
 
-2. **Configure the project with CMake:**
+```bash
+# 1. Clone the repository
+git clone https://github.com/JosefAmbruz/fsm-editor.git
+cd fsm-editor
 
-   ```sh
-   cmake ..
-   ```
+# 2. Configure build
+cmake -B build
 
-3. **Build:**
+# 3. Build target
+cmake --build build -j$(nproc)
 
-   ```sh
-   make
-   ```
+# 4. Run the editor
+./build/fsm-editor
+```
 
-4. **(Optional) Generate Doxygen documentation:**
-   ```sh
-   doxygen Doxyfile
-   ```
+### Using Makefile (Convenience Wrapper)
+
+A convenience `Makefile` is provided in the repository root:
+
+```bash
+make        # Runs cmake -B build && cmake --build build
+make run    # Builds and launches the application
+make clean  # Cleans build artifacts
+```
+
+---
 
 ## Usage
 
-1. **Run the application:**
+1. **Design the State Machine**:
+   - Right-click or use the toolbar to add states.
+   - Adjust input and output transition ports dynamically.
+   - Connect output ports to target state inputs.
+   - Define state actions and transition conditions in the editor panels.
+2. **Manage Variables**:
+   - Add global variables (Integers, Booleans, Strings, Floats) in the bottom-right panel.
+3. **Execute & Simulate**:
+   - Press the **🟢 Run** button to generate Python code, spawn the interpreter subprocess, and initiate real-time TCP telemetry.
+   - Watch the active state display and live log stream.
+   - Modify variable values on the fly to test branch conditions.
+4. **Save and Load**:
+   - Use the **File** menu to save the current model to `.fsm` format or reload existing designs.
 
-   ```sh
-   ./icp
-   ```
+---
 
-2. **Design your FSM:**
+## Communication Protocol
 
-   - Add states and transitions using the graphical editor.
-   - Set actions and conditions for states and transitions.
-   - Configure variables and initial values.
+The GUI communicates with the Python interpreter over TCP using a structured newline-delimited JSON protocol.
 
-3. **Generate and run the Python FSM:**
+- **FSM → Client Events**: `FSM_CONNECTED`, `FSM_STARTED`, `CURRENT_STATE`, `TRANSITION_TAKEN`, `VARIABLE_UPDATE`, `FSM_FINISHED`, `FSM_ERROR`
+- **Client → FSM Commands**: `SET_VARIABLE`, `STOP_FSM`
 
-   - Click the **Run** button to generate and execute the Python FSM interpreter.
-   - View logs and FSM output in the application.
+For the full payload specification, see [CommunicationProtocol.md](CommunicationProtocol.md).
 
-4. **Connect as a client (optional):**
-
-   - Use the built-in client or your own TCP client to interact with the running FSM.
-
-5. **Save/Load your FSM project:**
-   - Use the menu options to save or load FSM designs.
+---
 
 ## Project Structure
 
 ```
-src/                # C++ source code (editor, client, code generation)
-src/interpret/      # Python FSM interpreter and core logic
-tests/              # Test scripts and client examples
-docs/               # (Optional) Doxygen documentation output
+├── CMakeLists.txt              # Root CMake project configuration
+├── Makefile                    # Developer build convenience wrapper
+├── CommunicationProtocol.md    # TCP IPC message specification
+├── Doxyfile                    # Doxygen documentation configuration
+├── src/
+│   ├── CMakeLists.txt          # Target definition and install rules
+│   ├── main.cpp                # Application entry point
+│   ├── mainwindow.{cpp,h,ui}   # Main Qt GUI window and node scene logic
+│   ├── DynamicPortsModel.{cpp,hpp} # Custom dynamic port graph model
+│   ├── PortAddRemoveWidget.{cpp,hpp} # Dynamic port UI controller
+│   ├── client.{cpp,hpp}        # Qt TCP socket client for FSM communication
+│   ├── interpret_generator.{cpp,h} # Python code generation engine
+│   ├── spec_parser/            # Custom .fsm parser and data structures
+│   ├── interpret/              # Python runtime interpreter (fsm_core)
+│   └── nodeeditor-master/      # Customized Qt node-editor framework
+├── tests/
+│   └── fsm_client_test.py      # Standalone Python CLI client for IPC testing
+└── assets/                     # Application visual resources
 ```
 
-## Doxygen Documentation
+---
 
-To generate and view documentation:
+## Documentation
 
-```sh
-doxygen -g           # (first time only, to generate Doxyfile)
+To generate HTML API documentation using Doxygen:
+
+```bash
 doxygen Doxyfile
-xdg-open html/index.html
+# Or via Makefile:
+make doxygen
+
+# Open generated docs:
+xdg-open doc/html/index.html
 ```
 
-## Troubleshooting
+---
 
-- **Python process not starting:**  
-  Ensure Python 3 is installed and accessible in your PATH.
+## Code Attribution & References
 
-- **Client connection refused:**  
-  Make sure the Python FSM server is running before connecting the client.
+- The visual graph framework is built upon the [`nodeeditor`](https://github.com/paceholder/nodeeditor) library, with customized modifications to support dynamic ports and custom serialization in this project.
+- Dynamic port handling was inspired by the `dynamic_ports` architecture provided in the `nodeeditor` examples.
 
-- **Missing Qt modules:**  
-  Install the required Qt development packages for your platform.
+---
 
-## Contributing
+## License
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
 
-## References and Code Attribution
-
-- The implementation of
-  `DynamicPortsModel.{cpp, hpp}`, `PortAddRemoveWidget.{cpp, hpp}` is inspired by the _dynamic_ports_ example provided in the repository of the `nodeeditor` library.  
-  🔗Link: https://github.com/paceholder/nodeeditor/tree/master/examples
-
-- **_src/nodeeditor-master_** contains the source file of the `nodeeditor` library. The main reason to include source codes of external library this way is that we adjusted the library source code to fit our needs.
+---
 
 ## Authors
 
-- Josef Ambruz
-- Jakub Kovařík
+- **Josef Ambruz**
+- **Jakub Kovařík**

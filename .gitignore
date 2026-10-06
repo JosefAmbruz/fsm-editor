@@ -88,6 +88,11 @@ CMakeLists.txt.user*
 # Doxygen
 /doc/html/
 /doc/latex/
+html/
+latex/
 
+# Clangd / LSP cache
+.cache/
+compile_commands.json
 
 *.zip

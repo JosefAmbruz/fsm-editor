@@ -592,7 +592,8 @@ void MainWindow::on_button_Run_clicked()
 
     // --- 2. Generate Python FSM Code ---
     InterpretGenerator generator;
-    QString pythonFilePath = QDir::currentPath() + "/interpret/output.py";
+    QString baseDir = QCoreApplication::applicationDirPath();
+    QString pythonFilePath = baseDir + "/interpret/output.py";
     QDir().mkpath(QFileInfo(pythonFilePath).path()); // Ensure directory exists
 
     qDebug() << "[MainWindow] Generating Python FSM at:" << pythonFilePath;
@@ -600,7 +601,7 @@ void MainWindow::on_button_Run_clicked()
 
     // --- 3. Run the generated Python file ---
     QString pythonExe = "python"; // this could be configurable
-    QString logFilePath = QDir::currentPath() + "/interpret/output.log";
+    QString logFilePath = baseDir + "/interpret/output.log";
     QDir().mkpath(QFileInfo(logFilePath).path()); // Ensure directory exists
 
     // Clear previous log content

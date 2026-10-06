@@ -1,81 +1,67 @@
-cmake_minimum_required(VERSION 3.5)
-
-project(icp VERSION 0.1 LANGUAGES CXX)
-
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/nodeeditor-master nodeeditor_build)
+add_subdirectory(nodeeditor-master nodeeditor_build)
 
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        client.cpp
-        client.hpp
-        interpret_generator.cpp
-        interpret_generator.h
-        spec_parser/automaton-data.cpp
-        spec_parser/automaton-data.hpp
-        spec_parser/automaton-parser.cpp
-        spec_parser/automaton-parser.hpp
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
+    client.cpp
+    client.hpp
+    interpret_generator.cpp
+    interpret_generator.h
+    DynamicPortsModel.cpp
+    DynamicPortsModel.hpp
+    PortAddRemoveWidget.cpp
+    PortAddRemoveWidget.hpp
+    spec_parser/automaton-data.cpp
+    spec_parser/automaton-data.hpp
+    spec_parser/automaton-parser.cpp
+    spec_parser/automaton-parser.hpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(icp
+    qt_add_executable(fsm-editor
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-
-        DynamicPortsModel.cpp PortAddRemoveWidget.cpp
-        DynamicPortsModel.hpp PortAddRemoveWidget.hpp
-        interpret_generator.h interpret_generator.cpp
-
     )
-    add_custom_command(
-        TARGET icp POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                ${CMAKE_SOURCE_DIR}/interpret/fsm_core
-                $<TARGET_FILE_DIR:icp>/interpret/fsm_core
-    )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET icp APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(icp SHARED
+        add_library(fsm-editor SHARED
             ${PROJECT_SOURCES}
         )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(icp
+        add_executable(fsm-editor
             ${PROJECT_SOURCES}
         )
-
-
     endif()
 endif()
 
-target_link_libraries(icp PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_link_libraries(icp PRIVATE QtNodes)
-target_link_libraries(icp PRIVATE Qt${QT_VERSION_MAJOR}::Network)
+target_link_libraries(fsm-editor PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Network
+    QtNodes
+)
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
+# Copy Python interpreter core next to the executable
+add_custom_command(
+    TARGET fsm-editor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/interpret/fsm_core
+            $<TARGET_FILE_DIR:fsm-editor>/interpret/fsm_core
+)
+
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.icp)
+    set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.fsm-editor)
 endif()
-set_target_properties(icp PROPERTIES
+
+set_target_properties(fsm-editor PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -84,12 +70,13 @@ set_target_properties(icp PROPERTIES
 )
 
 include(GNUInstallDirs)
-install(TARGETS icp
+install(TARGETS fsm-editor
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(icp)
+    qt_finalize_executable(fsm-editor)
 endif()
+
